@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Exhentai阅读辅助
 // @namespace    https://github.com/dawn-lc/user.js/
-// @version      1.0
-// @description  可以在浏览Exhentai中需要双手离开键盘的时候,帮你自动翻页
+// @version      1.1.0
+// @description  可以在浏览Exhentai中需要双手离开键盘的时候,帮你自动翻页.ctrl+上/下调整翻页间隔.左/右=上一页/下一页.回车开关自动翻页.
 // @author       凌晨
 // @icon         http://exhentai.org/favicon.ico
 // @match        https://exhentai.org/s/*/*
@@ -119,7 +119,6 @@
         if (Enforce) {
             controlPanel.style.WebkitAnimation = ""; 
             controlPanel.style.animation = "";
-            controlPanel.style['right'] = '-120px';
             msgAnimationing = false;
             /* 开始动画 */
             controlPanel.style.WebkitAnimation = "info " + Time + " ease-in-out 1"; 
@@ -164,7 +163,6 @@
     function msgAnimationEnd() {
         controlPanel.style.WebkitAnimation = ""; // Chrome, Safari 和 Opera 代码
         controlPanel.style.animation = "";
-        controlPanel.style['right'] = '-120px';
         msgAnimationing = false;
     };
     
@@ -190,14 +188,11 @@
     }else{
         setCookie("slideShowMode",slideShowMode,-1);
     }
-
     if (document.getElementById("i3")){
         addListener();
     }
-
     function addListener(){
         document.getElementById("i3").addEventListener('DOMNodeRemoved',function imgChange(){
-            //document.getElementById("i3").childNodes[0].childNodes[0].removeEventListener('load', waitImgLoad());
             img=undefined;
             controlPanelInfo("正在等待图片源...");
         });
@@ -209,17 +204,22 @@
     }
     function waitImgLoad(){
         controlPanelInfo("加载图片中...");
-        img.onload =function() {
+        img.onload = function() {
             imgLoadComplete = true;
             controlPanelInfo("图片加载完成!");
             window.scrollTo({ 
                 top: img.offsetTop, 
                 behavior: "smooth" 
             });
-            slideShow();
+            checkSlideShow();
+        }
+        img.onerror = function() {
+            imgLoadComplete = false;
+            controlPanelInfo("图片加载失败!");
+            addListener();
+            checkSlideShow();
         }
     }
-
     document.onkeydown = function(event) {
         var e = event || window.e;
         var keyCode = e.keyCode || e.which || e.charCode;
@@ -257,79 +257,41 @@
             nextTimeOutSub();
         }
     }
-
-    /*
-    body.addEventListener('DOMNodeInserted',function(){
-        if (document.getElementById("i3")){
-            addListener();
-        }
-    });
-    
-    var observer_info = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length > 0) {
-                mutation.addedNodes.forEach(element =>{
-                    if (element.id == "i3") {
-                        addListener();
-                        observer_info.disconnect();
-                    };
-                });
-            };
-        });
-    });
-    observer_info.observe(document.body, {
-        childList: true
-    });
-    */
-
-
-
-
     function switchSlideShowMode() {
         if (slideShowMode){
             slideShowMode = false;
-            controlPanelInfo("关闭幻灯片模式!");
+            controlPanelInfo("关闭自动翻页模式!");
             setCookie("slideShowMode",false,-1);
-            slideShow();
+            checkSlideShow();
         }else{
             slideShowMode = true; 
-            controlPanelInfo("开启幻灯片模式!");
+            controlPanelInfo("开启自动翻页模式!");
             setCookie("slideShowMode",true,-1);
-            slideShow();
+            checkSlideShow();
             
         }
     }
-    function slideShow() {
-        if (slideShowMode){
-            if (imgLoadComplete){
-                run();
+    function checkSlideShow() {
+        if (imgLoadComplete){
+            if (slideShowMode){
+                SlideShow();
             }else{
-                controlPanelInfo("图片尚未加载完成");
                 clearTimeout(slideShowLoop);
-                slideShowMode = false;
-                controlPanelInfo("关闭幻灯片模式!");
-                setCookie("slideShowMode",false,-1);
             }
         }else{
-            clearTimeout(slideShowLoop);
+            if (slideShowMode){
+                clearTimeout(slideShowLoop);
+                load_image(Number(document.getElementById('prev').parentNode.childNodes[2].childNodes[0].innerHTML),window.location.href.split("/")[4]);
+            }else{
+                clearTimeout(slideShowLoop);
+            }
         }
     }
-    function run(){
+    function SlideShow(){
         controlPanelInfo(nextTimeOut+"秒后翻页");
         slideShowLoop = setTimeout(function(){
             next();
         },nextTimeOut*1000);
-
-
-        /*
-        slideShowLoop = setInterval(
-            function(){
-                if (imgLoadComplete){
-                    imgLoadComplete = false;
-                    nextp();
-                }
-        }, 10);
-        */
     }
 
     function nextTimeOutAdd() {
