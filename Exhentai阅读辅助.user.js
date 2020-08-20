@@ -4,6 +4,7 @@
 // @version      1.2.2
 // @description  可以在浏览Exhentai时需要双手离开键盘的时候, 帮你自动翻页。ctrl+上/下调整翻页间隔、左/右=上一页/下一页、回车开关自动翻页。[不支持多页查看器]
 // @author       凌晨
+// @license      WTFPL
 // @icon         http://exhentai.org/favicon.ico
 // @match        https://exhentai.org/s/*/*
 // @match        https://e-hentai.org/s/*/*
