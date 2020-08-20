@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Exhentai阅读辅助
 // @namespace    https://github.com/dawn-lc/user.js/
-// @version      1.1.1
+// @version      1.2.0
 // @description  可以在浏览Exhentai中需要双手离开键盘的时候,帮你自动翻页.ctrl+上/下调整翻页间隔.左/右=上一页/下一页.回车开关自动翻页.
 // @author       凌晨
 // @icon         http://exhentai.org/favicon.ico
@@ -13,17 +13,53 @@
 
 (function () {
 
-
-
     /*初始化*/
     var head = document.head || document.getElementsByTagName('head')[0];
     var body = document.body || document.getElementsByTagName('body')[0];
+    //图片是否加载完成标识
     var imgLoadComplete = false;
+    //初始化自动翻页延迟
     var nextTimeOut = 5;
+    //初始化幻灯片放映模式
     var slideShowMode = false;
+    //初始化图片对象
     var img = undefined;
+    //初始化幻灯片放映循环
     var slideShowLoop;
 
+    //读取自动翻页延迟配置
+    if (GM_getValue("nextTimeOut",undefined)!=undefined) {
+        nextTimeOut = Number(GM_getValue("nextTimeOut"));
+        GM_setValue("nextTimeOut",nextTimeOut);
+    } else {
+        GM_setValue("nextTimeOut",nextTimeOut);
+    }
+    //读取幻灯片放映模式配置
+    if (GM_getValue("slideShowMode",undefined)!=undefined) {
+        slideShowMode = GM_getValue("slideShowMode");
+    } else {
+        GM_setValue("slideShowMode",slideShowMode);
+    }
+
+    //检查图片是否加载若已加载添加监听
+    if (document.getElementById("i3")) {
+        addListener();
+    }
+
+    //监听
+    function addListener() {
+        document.getElementById("i3").addEventListener('DOMNodeRemoved', function imgChange() {
+            img = undefined;
+            msg("正在等待图片源...","longAnimation");
+        });
+        document.getElementById("i3").addEventListener('DOMNodeInserted', function imgLoad() {
+            img = document.getElementById("i3").childNodes[0].childNodes[0];
+            document.getElementById("i3").childNodes[0].childNodes[0].addEventListener('load', waitImgLoad());
+            msg("正在连接图片源...","longAnimation");
+        });
+    }
+
+    //样式本体
     var controlPanelCss = document.createElement("style");
     controlPanelCss.innerHTML = `
     #controlPanel {
@@ -76,16 +112,19 @@
         100% {right:-120px;}
     }
     `;
+    head.appendChild(controlPanelCss);
+
+    //弹窗本体
     var controlPanelCode = document.createElement("div");
     controlPanelCode.id = "controlPanel";
     controlPanelCode.innerHTML = `<div id="controlPanelItem" class="controlPanelItem"></div>`;
-    head.appendChild(controlPanelCss);
     body.insertBefore(controlPanelCode, body.childNodes[0]);
 
+    //绑定
     var controlPanel = document.getElementById("controlPanel");
     var controlPanelItem = document.getElementById("controlPanelItem");
 
-
+    //弹窗函数
     function msg(msg, type) {
         controlPanel.classList = "";
         controlPanel.offsetWidth = controlPanel.offsetWidth;
@@ -93,37 +132,7 @@
         controlPanel.classList.add('info_' + type);
     }
 
-
-
-    if (GM_getValue("nextTimeOut",undefined)!=undefined) {
-        nextTimeOut = Number(GM_getValue("nextTimeOut"));
-        GM_setValue("nextTimeOut",nextTimeOut);
-    } else {
-        GM_setValue("nextTimeOut",nextTimeOut);
-    }
-
-    if (GM_getValue("slideShowMode",undefined)!=undefined) {
-        slideShowMode = GM_getValue("slideShowMode");
-    } else {
-        GM_setValue("slideShowMode",slideShowMode);
-    }
-
-    if (document.getElementById("i3")) {
-        addListener();
-    }
-
-    function addListener() {
-        document.getElementById("i3").addEventListener('DOMNodeRemoved', function imgChange() {
-            img = undefined;
-            msg("正在等待图片源...","longAnimation");
-        });
-        document.getElementById("i3").addEventListener('DOMNodeInserted', function imgLoad() {
-            img = document.getElementById("i3").childNodes[0].childNodes[0];
-            document.getElementById("i3").childNodes[0].childNodes[0].addEventListener('load', waitImgLoad());
-            msg("正在连接图片源...","longAnimation");
-        });
-    }
-
+    //等待图片加载
     function waitImgLoad() {
         msg("加载图片中...","longAnimation");
         img.onload = function () {
@@ -143,6 +152,7 @@
         }
     }
 
+    //切换幻灯片放映模式
     function switchSlideShowMode() {
         if (slideShowMode) {
             slideShowMode = false;
@@ -158,6 +168,7 @@
         }
     }
 
+    //检查幻灯片放映模式
     function checkSlideShow() {
         if (imgLoadComplete) {
             if (slideShowMode) {
@@ -175,6 +186,7 @@
         }
     }
 
+    //开始幻灯片放映模式
     function SlideShow() {
         msg(nextTimeOut + "秒后翻页","shortAnimation");
         slideShowLoop = setTimeout(function () {
@@ -182,16 +194,21 @@
         }, nextTimeOut * 1000);
     }
 
+    //增加自动翻页延迟
     function nextTimeOutAdd() {
         nextTimeOut++;
         GM_setValue("nextTimeOut",nextTimeOut);
         msg("间隔为:" + nextTimeOut + "秒(下一页生效)","shortAnimation");
     }
+
+    //减少自动翻页延迟
     function nextTimeOutSub() {
         nextTimeOut--;
         GM_setValue("nextTimeOut",nextTimeOut);
         msg("间隔为:" + nextTimeOut + "秒(下一页生效)","shortAnimation");
     }
+
+    //下一页
     function next() {
         if (document.getElementById('next').parentNode.childNodes[2].childNodes[0].innerHTML == document.getElementById('next').parentNode.childNodes[2].childNodes[2].innerHTML) {
             msg("这是最后一页!","shortAnimation");
@@ -201,6 +218,8 @@
             document.getElementById('next').onclick();
         }
     }
+    
+    //上一页
     function previous() {
         if (document.getElementById('prev').parentNode.childNodes[2].childNodes[0].innerHTML == "1") {
             msg("这是第一页!","shortAnimation");
@@ -211,8 +230,7 @@
         }
     }
 
-
-
+    //监听键盘快捷键
     document.onkeydown = function (event) {
         var e = event || window.e;
         var keyCode = e.keyCode || e.which || e.charCode;
