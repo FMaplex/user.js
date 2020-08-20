@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Exhentai阅读辅助
 // @namespace    https://github.com/dawn-lc/user.js/
-// @version      1.2.0
-// @description  可以在浏览Exhentai中需要双手离开键盘的时候,帮你自动翻页.ctrl+上/下调整翻页间隔.左/右=上一页/下一页.回车开关自动翻页.
+// @version      1.2.1
+// @description  可以在浏览Exhentai时需要双手离开键盘的时候, 帮你自动翻页。ctrl+上/下调整翻页间隔、左/右=上一页/下一页、回车开关自动翻页。
 // @author       凌晨
 // @icon         http://exhentai.org/favicon.ico
 // @match        https://exhentai.org/s/*/*
@@ -74,7 +74,6 @@
     .controlPanelItem {
         margin: 5px;
     }
-
     .info_longAnimation{
         animation:info 5s ease-in-out 0s 1 normal;
         -webkit-animation:info 5s ease-in-out 0s 1 normal;
@@ -83,7 +82,6 @@
         animation:info 2s ease-in-out 0s 1 normal;
         -webkit-animation:info 2s ease-in-out 0s 1 normal;
     }
-
     @keyframes info {
         0%   {right:-120px;}
         10%  {right:0px;}
@@ -164,7 +162,6 @@
             msg("开启自动翻页模式!","shortAnimation");
             GM_setValue("slideShowMode",slideShowMode);
             checkSlideShow();
-
         }
     }
 
@@ -213,19 +210,23 @@
         if (document.getElementById('next').parentNode.childNodes[2].childNodes[0].innerHTML == document.getElementById('next').parentNode.childNodes[2].childNodes[2].innerHTML) {
             msg("这是最后一页!","shortAnimation");
             slideShowMode = false;
+            clearTimeout(slideShowLoop);
             GM_setValue("slideShowMode",slideShowMode);
         } else {
+            clearTimeout(slideShowLoop);
             document.getElementById('next').onclick();
         }
     }
-    
+
     //上一页
     function previous() {
         if (document.getElementById('prev').parentNode.childNodes[2].childNodes[0].innerHTML == "1") {
             msg("这是第一页!","shortAnimation");
             slideShowMode = false;
+            clearTimeout(slideShowLoop);
             GM_setValue("slideShowMode",slideShowMode);
         } else {
+            clearTimeout(slideShowLoop);
             document.getElementById('prev').onclick();
         }
     }
