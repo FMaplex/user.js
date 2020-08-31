@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Exhentai阅读辅助
 // @namespace    https://github.com/dawn-lc/user.js/
-// @version      1.3.2
+// @version      1.3.4
 // @description  可以在浏览Exhentai时需要双手离开键盘的时候, 帮你自动翻页。ctrl+上/下调整翻页间隔、左/右=上一页/下一页、回车开关自动翻页。[不支持多页查看器]
 // @author       凌晨
 // @icon         http://exhentai.org/favicon.ico
@@ -28,17 +28,17 @@
     var slideShowLoop;
 
     //读取自动翻页延迟配置
-    if (GM_getValue("nextTimeOut",undefined)!=undefined) {
+    if (GM_getValue("nextTimeOut", undefined) != undefined) {
         nextTimeOut = Number(GM_getValue("nextTimeOut"));
-        GM_setValue("nextTimeOut",nextTimeOut);
+        GM_setValue("nextTimeOut", nextTimeOut);
     } else {
-        GM_setValue("nextTimeOut",nextTimeOut);
+        GM_setValue("nextTimeOut", nextTimeOut);
     }
     //读取幻灯片放映模式配置
-    if (GM_getValue("slideShowMode",undefined)!=undefined) {
+    if (GM_getValue("slideShowMode", undefined) != undefined) {
         slideShowMode = GM_getValue("slideShowMode");
     } else {
-        GM_setValue("slideShowMode",slideShowMode);
+        GM_setValue("slideShowMode", slideShowMode);
     }
 
     //样式本体
@@ -164,11 +164,11 @@
     var infoPanelItem = document.getElementById("infoPanelItem");
 
     //弹窗函数
-    function msg(type,msgText="") {
-        if (msgText!=""){
+    function msg(type, msgText = "") {
+        if (msgText != "") {
             infoPanelItem.innerText = msgText;
         }
-        switch(type) {
+        switch (type) {
             case "pauseAnimation":
                 infoPanel.classList = infoPanel.classList.replace(/info_runAnimation/g, "").trim();
                 infoPanel.offsetWidth = infoPanel.offsetWidth;
@@ -196,13 +196,13 @@
     function addListener() {
         document.getElementById("i3").addEventListener('DOMNodeInserted', function imgLoad() {
             msg("longAnimationOut");
-            msg("longAnimationIn","找到图片源!尝试连接中...");
+            msg("longAnimationIn", "找到图片源!尝试连接中...");
             img = document.getElementById("i3").childNodes[0].childNodes[0];
             document.getElementById("i3").childNodes[0].childNodes[0].addEventListener('load', waitImgLoad());
         });
         document.getElementById("i3").addEventListener('DOMNodeRemoved', function imgChange() {
             img = undefined;
-            msg("longAnimationIn","正在查找图片源...");
+            msg("longAnimationIn", "正在查找图片源...");
         });
     }
 
@@ -211,11 +211,11 @@
     //等待图片加载
     function waitImgLoad() {
         msg("longAnimationOut");
-        msg("longAnimationIn","正在加载图片...");
+        msg("longAnimationIn", "正在加载图片...");
         img.onload = function () {
             imgLoadComplete = true;
             msg("longAnimationOut");
-            msg("shortAnimation","图片加载完成!");
+            msg("shortAnimation", "图片加载完成!");
             window.scrollTo({
                 top: img.offsetTop,
                 behavior: "smooth"
@@ -225,14 +225,14 @@
         img.onabort = function () {
             imgLoadComplete = false;
             msg("longAnimationOut");
-            msg("shortAnimation","图片加载失败!");
+            msg("shortAnimation", "图片加载失败!");
             addListener();
             checkSlideShow();
         }
         img.onerror = function () {
             imgLoadComplete = false;
             msg("longAnimationOut");
-            msg("shortAnimation","图片加载失败!");
+            msg("shortAnimation", "图片加载失败!");
             addListener();
             checkSlideShow();
         }
@@ -242,13 +242,13 @@
     function switchSlideShowMode() {
         if (slideShowMode) {
             slideShowMode = false;
-            msg("shortAnimation","关闭自动翻页模式!");
-            GM_setValue("slideShowMode",slideShowMode);
+            msg("shortAnimation", "关闭自动翻页模式!");
+            GM_setValue("slideShowMode", slideShowMode);
             checkSlideShow();
         } else {
             slideShowMode = true;
-            msg("shortAnimation","开启自动翻页模式!");
-            GM_setValue("slideShowMode",slideShowMode);
+            msg("shortAnimation", "开启自动翻页模式!");
+            GM_setValue("slideShowMode", slideShowMode);
             checkSlideShow();
         }
     }
@@ -274,17 +274,12 @@
     //开始幻灯片放映模式
     function SlideShow() {
         if (document.getElementById('next').parentNode.childNodes[2].childNodes[0].innerHTML == document.getElementById('next').parentNode.childNodes[2].childNodes[2].innerHTML) {
-            msg("shortAnimation","这是最后一页!");
+            msg("shortAnimation", "这是最后一页!");
             slideShowMode = false;
             clearTimeout(slideShowLoop);
-            GM_setValue("slideShowMode",slideShowMode);
-        } else if (document.getElementById('prev').parentNode.childNodes[2].childNodes[0].innerHTML == "1") {
-            msg("shortAnimation","这是第一页!");
-            slideShowMode = false;
-            clearTimeout(slideShowLoop);
-            GM_setValue("slideShowMode",slideShowMode);
+            GM_setValue("slideShowMode", slideShowMode);
         } else {
-            msg("shortAnimation",nextTimeOut + "秒后翻页");
+            msg("shortAnimation", nextTimeOut + "秒后翻页");
             slideShowLoop = setTimeout(function () {
                 next();
             }, nextTimeOut * 1000);
@@ -294,44 +289,48 @@
     //增加自动翻页延迟
     function nextTimeOutAdd() {
         nextTimeOut++;
-        GM_setValue("nextTimeOut",nextTimeOut);
-        msg("shortAnimation","间隔为:" + nextTimeOut + "秒(下一页生效)");
+        GM_setValue("nextTimeOut", nextTimeOut);
+        msg("shortAnimation", "间隔为:" + nextTimeOut + "秒(下一页生效)");
     }
 
     //减少自动翻页延迟
     function nextTimeOutSub() {
         nextTimeOut--;
-        GM_setValue("nextTimeOut",nextTimeOut);
-        msg("shortAnimation","间隔为:" + nextTimeOut + "秒(下一页生效)");
+        GM_setValue("nextTimeOut", nextTimeOut);
+        msg("shortAnimation", "间隔为:" + nextTimeOut + "秒(下一页生效)");
     }
 
     //翻页
     function switchPage(PreviousOrNext) {
-        if (document.getElementById('next').parentNode.childNodes[2].childNodes[0].innerHTML == document.getElementById('next').parentNode.childNodes[2].childNodes[2].innerHTML) {
-            msg("shortAnimation","这是最后一页!");
-            slideShowMode = false;
-            clearTimeout(slideShowLoop);
-            GM_setValue("slideShowMode",slideShowMode);
-        } else if (document.getElementById('prev').parentNode.childNodes[2].childNodes[0].innerHTML == "1") {
-            msg("shortAnimation","这是第一页!");
-            slideShowMode = false;
-            clearTimeout(slideShowLoop);
-            GM_setValue("slideShowMode",slideShowMode);
-        } else {
-            switch(PreviousOrNext) {
-                case "nextPage":
-                    next();
-                    break;
-                case "previousPage":
-                    previous();
-                    break;
-                default:
-                    msg("错误的需求!","shortAnimation");
+        switch (PreviousOrNext) {
+            case "nextPage":
+                if (document.getElementById('next').parentNode.childNodes[2].childNodes[0].innerHTML == document.getElementById('next').parentNode.childNodes[2].childNodes[2].innerHTML) {
+                    msg("shortAnimation", "这是最后一页!");
                     slideShowMode = false;
                     clearTimeout(slideShowLoop);
-                    GM_setValue("slideShowMode",slideShowMode);
+                    GM_setValue("slideShowMode", slideShowMode);
                     break;
-            }
+                } else {
+                    next();
+                    break;
+                }
+            case "previousPage":
+                if (document.getElementById('prev').parentNode.childNodes[2].childNodes[0].innerHTML == "1") {
+                    msg("shortAnimation", "这是第一页!");
+                    slideShowMode = false;
+                    clearTimeout(slideShowLoop);
+                    GM_setValue("slideShowMode", slideShowMode);
+                    break;
+                } else {
+                    previous();
+                    break;
+                }
+            default:
+                msg("错误的需求!", "shortAnimation");
+                slideShowMode = false;
+                clearTimeout(slideShowLoop);
+                GM_setValue("slideShowMode", slideShowMode);
+                break;
         }
     }
 
