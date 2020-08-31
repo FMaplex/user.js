@@ -242,12 +242,12 @@
     function switchSlideShowMode() {
         if (slideShowMode) {
             slideShowMode = false;
-            msg("关闭自动翻页模式!","shortAnimation");
+            msg("shortAnimation","关闭自动翻页模式!");
             GM_setValue("slideShowMode",slideShowMode);
             checkSlideShow();
         } else {
             slideShowMode = true;
-            msg("开启自动翻页模式!","shortAnimation");
+            msg("shortAnimation","开启自动翻页模式!");
             GM_setValue("slideShowMode",slideShowMode);
             checkSlideShow();
         }
