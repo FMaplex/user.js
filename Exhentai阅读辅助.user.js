@@ -1,13 +1,12 @@
 // ==UserScript==
 // @name         Exhentai阅读辅助
 // @namespace    https://github.com/dawn-lc/user.js/
-// @version      1.2.2
+// @version      1.3.2
 // @description  可以在浏览Exhentai时需要双手离开键盘的时候, 帮你自动翻页。ctrl+上/下调整翻页间隔、左/右=上一页/下一页、回车开关自动翻页。[不支持多页查看器]
 // @author       凌晨
-// @license      WTFPL
 // @icon         http://exhentai.org/favicon.ico
-// @match        https://exhentai.org/s/*/*
-// @match        https://e-hentai.org/s/*/*
+// @match        *://exhentai.org/s/*/*
+// @match        *://e-hentai.org/s/*/*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // ==/UserScript==
@@ -42,6 +41,152 @@
         GM_setValue("slideShowMode",slideShowMode);
     }
 
+    //样式本体
+    var infoPanelCss = document.createElement("style");
+    infoPanelCss.innerHTML = `
+    #infoPanel {
+        width: 128px;
+        overflow: hidden;
+        position: fixed;
+        top: 28px;
+        right: -128px;
+        z-index: 999;
+        background-color: gray;
+    }
+    .infoPanelItem {
+        margin: 5px 3px 5px 3px;
+    }
+    .info_longAnimation{
+        animation:info 5s ease-in-out forwards 0s 1 normal;
+        -webkit-animation:info 5s ease-in-out forwards 0s 1 normal;
+    }
+    .info_shortAnimation{
+        animation:info 2s ease-in-out forwards 0s 1 normal;
+        -webkit-animation:info 2s ease-in-out forwards 0s 1 normal;
+    }
+
+    .info_longAnimationIn{
+        animation:infoIn 0.5s ease-in forwards 0s 1 normal;
+        -webkit-animation:infoIn 0.5s ease-in forwards 0s 1 normal;
+    }
+    .info_shortAnimationIn{
+        animation:infoIn 0.2s ease-in 0s 1 normal;
+        -webkit-animation:infoIn 0.2s ease-in forwards 0s 1 normal;
+    }
+
+    .info_longAnimationOut{
+        animation:infoOut 0.25s ease-out forwards 0s 1 normal;
+        -webkit-animation:infoOut 0.25s ease-out forwards 0s 1 normal;
+    }
+    .info_shortAnimationOut{
+        animation:infoOut 0.1s ease-out forwards 0s 1 normal;
+        -webkit-animation:infoOut 0.1s ease-out forwards 0s 1 normal;
+    }
+
+    .info_pauseAnimation{
+        animation-play-state:paused;
+        -webkit-animation-play-state:paused;
+    }
+    .info_runAnimation{
+        animation-play-state:running;
+        -webkit-animation-play-state:running;
+    }
+
+    @keyframes info {
+        0%   {right:-128px;}
+        10%  {right:0px;}
+        95%  {right:0px;}
+        100% {right:-128px;}
+    }
+    @-moz-keyframes info {
+        0%   {right:-128px;}
+        10%  {right:0px;}
+        95%  {right:0px;}
+        100% {right:-128px;}
+    }
+    @-webkit-keyframes info {
+        0%   {right:-128px;}
+        10%  {right:0px;}
+        95%  {right:0px;}
+        100% {right:-128px;}
+    }
+    @-o-keyframes info {
+        0%   {right:-128px;}
+        100% {right:0px;}
+    }
+
+
+    @keyframes infoIn {
+        0%   {right:-128px;}
+        100% {right:0px;}
+    }
+    @-moz-keyframes infoIn {
+        0%   {right:-128px;}
+        100% {right:0px;}
+    }
+    @-webkit-keyframes infoIn {
+        0%   {right:-128px;}
+        100% {right:0px;}
+    }
+    @-o-keyframes infoIn {
+        0%   {right:-128px;}
+        100% {right:0px;}
+    }
+
+
+    @keyframes infoOut {
+        0%   {right:0px;}
+        100% {right:-128px;}
+    }
+    @-moz-keyframes infoOut {
+        0%   {right:0px;}
+        100% {right:-128px;}
+    }
+    @-webkit-keyframes infoOut {
+        0%   {right:0px;}
+        100% {right:-128px;}
+    }
+    @-o-keyframes infoOut {
+        0%   {right:0px;}
+        100% {right:-128px;}
+    }
+    `;
+    head.appendChild(infoPanelCss);
+
+    //弹窗本体
+    var infoPanelCode = document.createElement("div");
+    infoPanelCode.id = "infoPanel";
+    infoPanelCode.innerHTML = `<div id="infoPanelItem" class="infoPanelItem"></div>`;
+    body.insertBefore(infoPanelCode, body.childNodes[0]);
+
+    //绑定
+    var infoPanel = document.getElementById("infoPanel");
+    var infoPanelItem = document.getElementById("infoPanelItem");
+
+    //弹窗函数
+    function msg(type,msgText="") {
+        if (msgText!=""){
+            infoPanelItem.innerText = msgText;
+        }
+        switch(type) {
+            case "pauseAnimation":
+                infoPanel.classList = infoPanel.classList.replace(/info_runAnimation/g, "").trim();
+                infoPanel.offsetWidth = infoPanel.offsetWidth;
+                infoPanel.classList.add('info_' + type);
+                break;
+            case "runAnimation":
+                infoPanel.classList = infoPanel.classList.replace(/info_pauseAnimation/g, "").trim();
+                infoPanel.offsetWidth = infoPanel.offsetWidth;
+                infoPanel.classList.add('info_' + type);
+                break;
+            default:
+                infoPanel.classList = "";
+                infoPanel.offsetWidth = infoPanel.offsetWidth;
+                infoPanel.classList.add('info_' + type);
+                break;
+        }
+    }
+
     //检查图片是否加载若已加载添加监听
     if (document.getElementById("i3")) {
         addListener();
@@ -49,103 +194,45 @@
 
     //监听
     function addListener() {
-        document.getElementById("i3").addEventListener('DOMNodeRemoved', function imgChange() {
-            img = undefined;
-            msg("正在等待图片源...","longAnimation");
-        });
         document.getElementById("i3").addEventListener('DOMNodeInserted', function imgLoad() {
+            msg("longAnimationOut");
+            msg("longAnimationIn","找到图片源!尝试连接中...");
             img = document.getElementById("i3").childNodes[0].childNodes[0];
             document.getElementById("i3").childNodes[0].childNodes[0].addEventListener('load', waitImgLoad());
-            msg("正在连接图片源...","longAnimation");
+        });
+        document.getElementById("i3").addEventListener('DOMNodeRemoved', function imgChange() {
+            img = undefined;
+            msg("longAnimationIn","正在查找图片源...");
         });
     }
 
-    //样式本体
-    var controlPanelCss = document.createElement("style");
-    controlPanelCss.innerHTML = `
-    #controlPanel {
-        width: 120px;
-        overflow: hidden;
-        position: fixed;
-        top:30px;
-        right:-120px;
-        z-index: 500;
-        background-color: gray;
-    }
-    .controlPanelItem {
-        margin: 5px;
-    }
-    .info_longAnimation{
-        animation:info 5s ease-in-out 0s 1 normal;
-        -webkit-animation:info 5s ease-in-out 0s 1 normal;
-    }
-    .info_shortAnimation{
-        animation:info 2s ease-in-out 0s 1 normal;
-        -webkit-animation:info 2s ease-in-out 0s 1 normal;
-    }
-    @keyframes info {
-        0%   {right:-120px;}
-        10%  {right:0px;}
-        95%  {right:0px;}
-        100% {right:-120px;}
-    }
-    /* Firefox */
-    @-moz-keyframes info {
-        0%   {right:-120px;}
-        10%  {right:0px;}
-        95%  {right:0px;}
-        100% {right:-120px;}
-    }
-    /* Safari 和 Chrome */
-    @-webkit-keyframes info {
-        0%   {right:-120px;}
-        10%  {right:0px;}
-        95%  {right:0px;}
-        100% {right:-120px;}
-    }
-    /* Opera */
-    @-o-keyframes info {
-        0%   {right:-120px;}
-        10%  {right:0px;}
-        95%  {right:0px;}
-        100% {right:-120px;}
-    }
-    `;
-    head.appendChild(controlPanelCss);
 
-    //弹窗本体
-    var controlPanelCode = document.createElement("div");
-    controlPanelCode.id = "controlPanel";
-    controlPanelCode.innerHTML = `<div id="controlPanelItem" class="controlPanelItem"></div>`;
-    body.insertBefore(controlPanelCode, body.childNodes[0]);
-
-    //绑定
-    var controlPanel = document.getElementById("controlPanel");
-    var controlPanelItem = document.getElementById("controlPanelItem");
-
-    //弹窗函数
-    function msg(msg, type) {
-        controlPanel.classList = "";
-        controlPanel.offsetWidth = controlPanel.offsetWidth;
-        controlPanelItem.innerText = msg;
-        controlPanel.classList.add('info_' + type);
-    }
 
     //等待图片加载
     function waitImgLoad() {
-        msg("加载图片中...","longAnimation");
+        msg("longAnimationOut");
+        msg("longAnimationIn","正在加载图片...");
         img.onload = function () {
             imgLoadComplete = true;
-            msg("图片加载完成!","shortAnimation");
+            msg("longAnimationOut");
+            msg("shortAnimation","图片加载完成!");
             window.scrollTo({
                 top: img.offsetTop,
                 behavior: "smooth"
             });
             checkSlideShow();
         }
+        img.onabort = function () {
+            imgLoadComplete = false;
+            msg("longAnimationOut");
+            msg("shortAnimation","图片加载失败!");
+            addListener();
+            checkSlideShow();
+        }
         img.onerror = function () {
             imgLoadComplete = false;
-            msg("图片加载失败!","shortAnimation");
+            msg("longAnimationOut");
+            msg("shortAnimation","图片加载失败!");
             addListener();
             checkSlideShow();
         }
@@ -186,50 +273,78 @@
 
     //开始幻灯片放映模式
     function SlideShow() {
-        msg(nextTimeOut + "秒后翻页","shortAnimation");
-        slideShowLoop = setTimeout(function () {
-            next();
-        }, nextTimeOut * 1000);
+        if (document.getElementById('next').parentNode.childNodes[2].childNodes[0].innerHTML == document.getElementById('next').parentNode.childNodes[2].childNodes[2].innerHTML) {
+            msg("shortAnimation","这是最后一页!");
+            slideShowMode = false;
+            clearTimeout(slideShowLoop);
+            GM_setValue("slideShowMode",slideShowMode);
+        } else if (document.getElementById('prev').parentNode.childNodes[2].childNodes[0].innerHTML == "1") {
+            msg("shortAnimation","这是第一页!");
+            slideShowMode = false;
+            clearTimeout(slideShowLoop);
+            GM_setValue("slideShowMode",slideShowMode);
+        } else {
+            msg("shortAnimation",nextTimeOut + "秒后翻页");
+            slideShowLoop = setTimeout(function () {
+                next();
+            }, nextTimeOut * 1000);
+        }
     }
 
     //增加自动翻页延迟
     function nextTimeOutAdd() {
         nextTimeOut++;
         GM_setValue("nextTimeOut",nextTimeOut);
-        msg("间隔为:" + nextTimeOut + "秒(下一页生效)","shortAnimation");
+        msg("shortAnimation","间隔为:" + nextTimeOut + "秒(下一页生效)");
     }
 
     //减少自动翻页延迟
     function nextTimeOutSub() {
         nextTimeOut--;
         GM_setValue("nextTimeOut",nextTimeOut);
-        msg("间隔为:" + nextTimeOut + "秒(下一页生效)","shortAnimation");
+        msg("shortAnimation","间隔为:" + nextTimeOut + "秒(下一页生效)");
+    }
+
+    //翻页
+    function switchPage(PreviousOrNext) {
+        if (document.getElementById('next').parentNode.childNodes[2].childNodes[0].innerHTML == document.getElementById('next').parentNode.childNodes[2].childNodes[2].innerHTML) {
+            msg("shortAnimation","这是最后一页!");
+            slideShowMode = false;
+            clearTimeout(slideShowLoop);
+            GM_setValue("slideShowMode",slideShowMode);
+        } else if (document.getElementById('prev').parentNode.childNodes[2].childNodes[0].innerHTML == "1") {
+            msg("shortAnimation","这是第一页!");
+            slideShowMode = false;
+            clearTimeout(slideShowLoop);
+            GM_setValue("slideShowMode",slideShowMode);
+        } else {
+            switch(PreviousOrNext) {
+                case "nextPage":
+                    next();
+                    break;
+                case "previousPage":
+                    previous();
+                    break;
+                default:
+                    msg("错误的需求!","shortAnimation");
+                    slideShowMode = false;
+                    clearTimeout(slideShowLoop);
+                    GM_setValue("slideShowMode",slideShowMode);
+                    break;
+            }
+        }
     }
 
     //下一页
     function next() {
-        if (document.getElementById('next').parentNode.childNodes[2].childNodes[0].innerHTML == document.getElementById('next').parentNode.childNodes[2].childNodes[2].innerHTML) {
-            msg("这是最后一页!","shortAnimation");
-            slideShowMode = false;
-            clearTimeout(slideShowLoop);
-            GM_setValue("slideShowMode",slideShowMode);
-        } else {
-            clearTimeout(slideShowLoop);
-            document.getElementById('next').onclick();
-        }
+        clearTimeout(slideShowLoop);
+        document.getElementById('next').onclick();
     }
 
     //上一页
     function previous() {
-        if (document.getElementById('prev').parentNode.childNodes[2].childNodes[0].innerHTML == "1") {
-            msg("这是第一页!","shortAnimation");
-            slideShowMode = false;
-            clearTimeout(slideShowLoop);
-            GM_setValue("slideShowMode",slideShowMode);
-        } else {
-            clearTimeout(slideShowLoop);
-            document.getElementById('prev').onclick();
-        }
+        clearTimeout(slideShowLoop);
+        document.getElementById('prev').onclick();
     }
 
     //监听键盘快捷键
@@ -256,11 +371,11 @@
                 break
             case 37:
                 //左
-                previous();
+                switchPage("previousPage");
                 break
             case 39:
                 //右
-                next();
+                switchPage("nextPage");
                 break
         }
         if (ctrlKey && keyCode == 38) {
