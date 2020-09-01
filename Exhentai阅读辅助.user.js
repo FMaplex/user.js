@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Exhentai阅读辅助
 // @namespace    https://github.com/dawn-lc/user.js/
-// @version      1.3.4
+// @version      1.3.6
 // @description  可以在浏览Exhentai时需要双手离开键盘的时候, 帮你自动翻页。ctrl+上/下调整翻页间隔、左/右=上一页/下一页、回车开关自动翻页。[不支持多页查看器]
 // @author       凌晨
 // @icon         http://exhentai.org/favicon.ico
@@ -87,10 +87,6 @@
         animation-play-state:paused;
         -webkit-animation-play-state:paused;
     }
-    .info_runAnimation{
-        animation-play-state:running;
-        -webkit-animation-play-state:running;
-    }
 
     @keyframes info {
         0%   {right:-128px;}
@@ -164,25 +160,27 @@
     var infoPanelItem = document.getElementById("infoPanelItem");
 
     //弹窗函数
-    function msg(type, msgText = "") {
+    function msg(msgtype, msgText = "") {
         if (msgText != "") {
             infoPanelItem.innerText = msgText;
         }
-        switch (type) {
+        switch (msgtype) {
             case "pauseAnimation":
-                infoPanel.classList = infoPanel.classList.replace(/info_runAnimation/g, "").trim();
-                infoPanel.offsetWidth = infoPanel.offsetWidth;
-                infoPanel.classList.add('info_' + type);
+                if (!infoPanel.classList.contains("info_pauseAnimation")) {
+                    infoPanel.classList.add("info_pauseAnimation");
+                    infoPanel.offsetWidth = infoPanel.offsetWidth;
+                }
                 break;
             case "runAnimation":
-                infoPanel.classList = infoPanel.classList.replace(/info_pauseAnimation/g, "").trim();
-                infoPanel.offsetWidth = infoPanel.offsetWidth;
-                infoPanel.classList.add('info_' + type);
+                if (infoPanel.classList.contains("info_pauseAnimation")) {
+                    infoPanel.classList.remove("info_pauseAnimation");
+                    infoPanel.offsetWidth = infoPanel.offsetWidth;
+                }
                 break;
             default:
                 infoPanel.classList = "";
                 infoPanel.offsetWidth = infoPanel.offsetWidth;
-                infoPanel.classList.add('info_' + type);
+                infoPanel.classList.add('info_' + msgtype);
                 break;
         }
     }
@@ -197,6 +195,10 @@
         document.getElementById("i3").addEventListener('DOMNodeInserted', function imgLoad() {
             msg("longAnimationOut");
             msg("longAnimationIn", "找到图片源!尝试连接中...");
+            window.scrollTo({
+                top: document.getElementById("i2").offsetTop,
+                behavior: "smooth"
+            });
             img = document.getElementById("i3").childNodes[0].childNodes[0];
             document.getElementById("i3").childNodes[0].childNodes[0].addEventListener('load', waitImgLoad());
         });
@@ -216,12 +218,9 @@
             imgLoadComplete = true;
             msg("longAnimationOut");
             msg("shortAnimation", "图片加载完成!");
-            window.scrollTo({
-                top: img.offsetTop,
-                behavior: "smooth"
-            });
             checkSlideShow();
         }
+        /*
         img.onabort = function () {
             imgLoadComplete = false;
             msg("longAnimationOut");
@@ -229,6 +228,7 @@
             addListener();
             checkSlideShow();
         }
+        */
         img.onerror = function () {
             imgLoadComplete = false;
             msg("longAnimationOut");
@@ -360,13 +360,17 @@
                 //回车
                 switchSlideShowMode();
                 break
+            case 32:
+                //空格
+                switchSlideShowMode();
+                break
             case 38:
                 //上
-                //nextTimeOutAdd();
+                //testUp();
                 break
             case 40:
                 //下
-                //nextTimeOutSub();
+                //testDown();
                 break
             case 37:
                 //左
