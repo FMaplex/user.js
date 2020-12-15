@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         E-hentai阅读辅助
 // @namespace    https://github.com/dawn-lc/user.js/
-// @version      1.3.9
+// @version      1.3.10
 // @description  可以在浏览E-hentai时需要双手离开键盘的时候, 帮你自动翻页。ctrl+上/下调整翻页间隔、左/右=上一页/下一页、回车开关自动翻页。[不支持多页查看器]
 // @author       凌晨
 // @icon         https://e-hentai.org/favicon.ico
@@ -55,11 +55,10 @@
         width: 152px;
         overflow: hidden;
         position:absolute;
-        /*top: 28px;*/
+        /* top: 5px; */
         right: -152px;
         z-index: 999;
         clip: rect(auto 0px auto auto);
-        background-color: gray;
     }
     .infoPanelItem {
         margin: 5px 3px 5px 3px;
@@ -165,35 +164,49 @@
     infoPanelCode.innerHTML = `<div id="infoPanelItem" class="infoPanelItem"></div>`;
 
 
-    //监听
+    //添加监听页面加载
     function addListener() {
-        document.body.addEventListener('DOMNodeInserted', function (Node) {
-            if (Node.relatedNode.nodeName == "BODY") {
-                document.getElementById("i1").insertBefore(infoPanelCode, document.getElementById("i1").childNodes[0]);
-                infoPanel = document.getElementById("infoPanel");
-                infoPanelItem = document.getElementById("infoPanelItem");
-                document.getElementById("i1").addEventListener('DOMNodeRemoved', function (Node) {
-                    if (Node.relatedNode.id == "i3") {
-                        img = undefined;
-                        msg("longAnimationIn", "正在查找图片源...");
-                    };
-                });
-                document.getElementById("i1").addEventListener('DOMNodeInserted', function (Node) {
-                    if (Node.relatedNode.id == "i3") {
-                        msg("longAnimationOut");
-                        msg("longAnimationIn", "找到图片源!尝试连接中...");
-                        window.scrollTo({
-                            top: document.getElementById("i2").offsetTop,
-                            behavior: "smooth"
-                        });
-                        imgLoadComplete = false;
-                        imgLoading = true;
-                        img = document.getElementById("i3").childNodes[0].childNodes[0];
-                        waitImgLoad();
-                    };
-                });
-            };
-        });
+        body.addEventListener("DOMNodeInserted", bodyListener);
+    };
+
+    //移除页面加载监听
+    function removeListener() {
+        body.removeEventListener("DOMNodeInserted", bodyListener);
+    };
+
+    //监听页面加载
+    function bodyListener(Node) {
+        if (Node.relatedNode.nodeName == "BODY") {
+            removeListener();
+            document.getElementById("i1").insertBefore(infoPanelCode, document.getElementById("i1").childNodes[2]);
+            infoPanel = document.getElementById("infoPanel");
+            infoPanelItem = document.getElementById("infoPanelItem");
+            if (document.domain == "exhentai.org"){
+                infoPanel.style.backgroundColor = "#808080";
+            }else{
+                infoPanel.style.backgroundColor = "#d0ccb8";
+            }
+            document.getElementById("i1").addEventListener('DOMNodeRemoved', function (Node) {
+                if (Node.relatedNode.id == "i3") {
+                    img = undefined;
+                    msg("longAnimationIn", "正在查找图片源...");
+                };
+            });
+            document.getElementById("i1").addEventListener('DOMNodeInserted', function (Node) {
+                if (Node.relatedNode.id == "i3") {
+                    msg("longAnimationOut");
+                    msg("longAnimationIn", "找到图片源!尝试连接中...");
+                    window.scrollTo({
+                        top: document.getElementById("i2").offsetTop,
+                        behavior: "smooth"
+                    });
+                    imgLoadComplete = false;
+                    imgLoading = true;
+                    img = document.getElementById("i3").childNodes[0].childNodes[0];
+                    waitImgLoad();
+                };
+            });
+        };
     };
 
     //弹窗函数
