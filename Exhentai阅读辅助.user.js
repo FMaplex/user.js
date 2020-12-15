@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         E-hentai阅读辅助
 // @namespace    https://github.com/dawn-lc/user.js/
-// @version      1.3.10
+// @version      1.3.11
 // @description  可以在浏览E-hentai时需要双手离开键盘的时候, 帮你自动翻页。ctrl+上/下调整翻页间隔、左/右=上一页/下一页、回车开关自动翻页。[不支持多页查看器]
 // @author       凌晨
 // @icon         https://e-hentai.org/favicon.ico
@@ -174,7 +174,7 @@
         body.removeEventListener("DOMNodeInserted", bodyListener);
     };
 
-    //监听页面加载
+    //监听页面事件
     function bodyListener(Node) {
         if (Node.relatedNode.nodeName == "BODY") {
             removeListener();
@@ -197,7 +197,7 @@
                     msg("longAnimationOut");
                     msg("longAnimationIn", "找到图片源!尝试连接中...");
                     window.scrollTo({
-                        top: document.getElementById("i2").offsetTop,
+                        top: document.getElementById("infoPanel").offsetTop,
                         behavior: "smooth"
                     });
                     imgLoadComplete = false;
@@ -206,6 +206,48 @@
                     waitImgLoad();
                 };
             });
+            //监听键盘快捷键
+            document.onkeydown = function (event) {
+                var e = event || window.e;
+                var keyCode = e.keyCode || e.which || e.charCode;
+                var altKey = e.altKey;
+                var shiftKey = e.shiftKey;
+                var ctrlKey = e.ctrlKey;
+                var metaKey = e.metaKey;
+                switch (keyCode) {
+                    case 108:
+                    case 13:
+                        //回车
+                        switchSlideShowMode();
+                        break;
+                    case 32:
+                        //空格
+                        switchSlideShowMode();
+                        break;
+                    case 38:
+                        //上
+                        //testUp();
+                        break;
+                    case 40:
+                        //下
+                        //testDown();
+                        break;
+                    case 37:
+                        //左
+                        switchPage("previousPage");
+                        break;
+                    case 39:
+                        //右
+                        switchPage("nextPage");
+                        break;
+                };
+                if (ctrlKey && keyCode == 38) {
+                    nextTimeOutAdd();
+                };
+                if (ctrlKey && keyCode == 40) {
+                    nextTimeOutSub();
+                };
+            };
         };
     };
 
@@ -363,47 +405,6 @@
         clearTimeout(slideShowLoop);
         document.getElementById('prev').onclick();
     };
+
     addListener();
-    //监听键盘快捷键
-    document.onkeydown = function (event) {
-        var e = event || window.e;
-        var keyCode = e.keyCode || e.which || e.charCode;
-        var altKey = e.altKey;
-        var shiftKey = e.shiftKey;
-        var ctrlKey = e.ctrlKey;
-        var metaKey = e.metaKey;
-        switch (keyCode) {
-            case 108:
-            case 13:
-                //回车
-                switchSlideShowMode();
-                break
-            case 32:
-                //空格
-                switchSlideShowMode();
-                break
-            case 38:
-                //上
-                //testUp();
-                break
-            case 40:
-                //下
-                //testDown();
-                break
-            case 37:
-                //左
-                switchPage("previousPage");
-                break
-            case 39:
-                //右
-                switchPage("nextPage");
-                break
-        }
-        if (ctrlKey && keyCode == 38) {
-            nextTimeOutAdd();
-        }
-        if (ctrlKey && keyCode == 40) {
-            nextTimeOutSub();
-        }
-    }
 })();
