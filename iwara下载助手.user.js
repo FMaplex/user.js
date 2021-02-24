@@ -2,7 +2,7 @@
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
 // @version      1.0.1
-// @description  iwara下载助手
+// @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
 // @match        https://ecchi.iwara.tv/videos*
