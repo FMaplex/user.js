@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.2
+// @version      1.0.3
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -380,6 +380,45 @@
                     break;
             }
         },
+        Selected() {
+            var clickTimer = null;
+            for (let index = 0; index < document.getElementsByClassName("node-video").length; index++) {
+                const element = document.getElementsByClassName("node-video")[index];
+                if (!element.classList.contains("node-full")) {
+                    let selectButton = element.getElementsByClassName("field-items")[0];
+                    for (let index = 0; index < selectButton.getElementsByTagName("A").length; index++) {
+                        const a = selectButton.getElementsByTagName("A")[index];
+                        a.parentNode.appendChild(a.childNodes[0])
+                        a.style.display = "none";
+                    };
+                    selectButton.classList.add("selectButton");
+                    selectButton.setAttribute("isselected", false);
+                    selectButton.ondblclick = function () {
+                        if (clickTimer) {
+                            window.clearTimeout(clickTimer);
+                            clickTimer = null;
+                        };
+                        if (this.getAttribute("isselected") === "true") {
+                            this.setAttribute("isselected", false);
+                        } else {
+                            this.setAttribute("isselected", true);
+                        };
+                    };
+                    selectButton.onclick = function () {
+                        if (clickTimer) {
+                            window.clearTimeout(clickTimer);
+                            clickTimer = null;
+                        };
+                        clickTimer = window.setTimeout(function () {
+                            element.getElementsByTagName("A")[1].click();
+                        }, 300);
+                    };
+                };
+            };
+            if (window.location.href.split("/")[3] == "users") {
+                document.getElementById("DownloadAll").style.display = "inline";
+            };
+        },
         PluginUI: [{
             nodeType: 'style',
             innerHTML: `.selectButton{
@@ -482,7 +521,7 @@
                 {
                     nodeType: 'li',
                     style: 'cursor: pointer;',
-                    id: 'manualDownload',
+                    id: 'ManualDownload',
                     innerHTML: '<a><span class="glyphicon glyphicon-edit"></span>手动下载</a>',
                     onclick: function () {
                         main.ManualParseDownloadAddress();
@@ -520,6 +559,8 @@
                         setting.setDownloadProxy(setting.DownloadProxy);
                         setting.setWebSocketAddress(setting.WebSocketAddress);
                         setting.setWebSocketToken(setting.WebSocketToken);
+                        document.getElementById("DownloadSelected").style.display = "inline";
+                        document.getElementById("ManualDownload").style.display = "inline";
                     }
                 },
                 {
@@ -656,10 +697,6 @@
 
     element.createElement(main.PluginUI);
     
-    if (window.location.href.split("/")[3] == "users") {
-        document.getElementById("downloadAll").style.display = "inline";
-    };
-
     window.onclick = function (event) {
         if (!event.path.includes(document.getElementById("PluginUI"))) {
             if (document.getElementById("PluginUI").classList.contains("open")) {
@@ -682,42 +719,11 @@
                 console.log("未知的下载模式!");
                 break;
         }
+        main.Selected();
     } else {
+        document.getElementById("DownloadSelected").style.display = "none";
+        document.getElementById("ManualDownload").style.display = "none";
         setting.setting();
+        main.Selected();
     }
-    
-    var clickTimer = null;
-    for (let index = 0; index < document.getElementsByClassName("node-video").length; index++) {
-        const element = document.getElementsByClassName("node-video")[index];
-        if (!element.classList.contains("node-full")) {
-            let selectButton = element.getElementsByClassName("field-items")[0];
-            for (let index = 0; index < selectButton.getElementsByTagName("A").length; index++) {
-                const a = selectButton.getElementsByTagName("A")[index];
-                a.parentNode.appendChild(a.childNodes[0])
-                a.style.display = "none";
-            };
-            selectButton.classList.add("selectButton");
-            selectButton.setAttribute("isselected", false);
-            selectButton.ondblclick = function () {
-                if (clickTimer) {
-                    window.clearTimeout(clickTimer);
-                    clickTimer = null;
-                };
-                if (this.getAttribute("isselected") === "true") {
-                    this.setAttribute("isselected", false);
-                } else {
-                    this.setAttribute("isselected", true);
-                };
-            };
-            selectButton.onclick = function () {
-                if (clickTimer) {
-                    window.clearTimeout(clickTimer);
-                    clickTimer = null;
-                };
-                clickTimer = window.setTimeout(function () {
-                    element.getElementsByTagName("A")[1].click();
-                }, 300);
-            };
-        };
-    };
 })();
