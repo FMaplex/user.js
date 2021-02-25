@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.3
+// @version      1.0.4
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -110,13 +110,17 @@
         others: 2
     }
     const setting = {
-        initialize: GM_getValue("initialize", false),
+        Initialize: GM_getValue("Initialize", false),
         DownloadType: GM_getValue("DownloadType", DownloadTypes.default),
         DownloadDir: GM_getValue("DownloadDir", ''),
         DownloadProxy: GM_getValue("DownloadProxy", ''),
         WebSocketAddress: GM_getValue("WebSocketAddress", 'ws://127.0.0.1:6800/'),
         WebSocketToken: GM_getValue("WebSocketToken", ''),
         WebSocketID: GM_getValue("WebSocketID", guid()),
+        setInitialize(value) {
+            this.Initialize = value;
+            GM_setValue("DownloadType", this.DownloadType);
+        },
         setDownloadType(value) {
             this.DownloadType = Number(value);
             GM_setValue("DownloadType", this.DownloadType);
@@ -554,13 +558,14 @@
                     innerHTML: '&times;',
                     onclick: function () {
                         this.parentNode.parentNode.style.display = "none";
-                        setting.setDownloadType(setting.initialize);
+                        setting.setDownloadType(setting.DownloadType);
                         setting.setDownloadDir(setting.DownloadDir);
                         setting.setDownloadProxy(setting.DownloadProxy);
                         setting.setWebSocketAddress(setting.WebSocketAddress);
                         setting.setWebSocketToken(setting.WebSocketToken);
                         document.getElementById("DownloadSelected").style.display = "inline";
                         document.getElementById("ManualDownload").style.display = "inline";
+                        setting.setInitialize(true);
                     }
                 },
                 {
@@ -705,7 +710,7 @@
         }
     };
 
-    if (setting.initialize) {
+    if (setting.Initialize) {
         switch (setting.DownloadType) {
             case DownloadTypes.aria2:
                 console.log("正在链接Aria2RPC");
