@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.8
+// @version      1.0.9
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -188,7 +188,8 @@
                         responseData.text().then(function (response) {
                             let videoListRawData = parseDom(response);
                             if (videoListRawData.length == 0) {
-                                console.log(responseData.url);
+                                console.log("没有找到可用的视频下载地址!");
+                                GM_openInTab(responseData.url, { active: true, insert: true, setParent: true });
                                 debugger
                             } else {
                                 let Author = videoListRawData.getElementsByClassName("node-info")[0].getElementsByClassName("username")[0].innerText;
@@ -208,7 +209,8 @@
                                                 responseData.json().then(function (response) {
                                                     let videoStreamInfo = response;
                                                     if (videoStreamInfo.length == 0) {
-                                                        console.log(responseData.url);
+                                                        console.log("没有找到可用的视频下载地址!");
+                                                        GM_openInTab(responseData.url, { active: true, insert: true, setParent: true });
                                                         debugger
                                                     } else {
                                                         let Url = decodeURIComponent("https:" + videoStreamInfo[0]["uri"]);
@@ -267,7 +269,8 @@
                         responseData.text().then(function (response) {
                             let videoListRawData = parseDom(response);
                             if (videoListRawData.length == 0) {
-                                console.log(responseData.url);
+                                console.log("没有找到可用的视频下载地址!");
+                                GM_openInTab(responseData.url, { active: true, insert: true, setParent: true });
                                 debugger
                             } else {
                                 ParseDownloadAddress(videoListRawData);
@@ -296,7 +299,8 @@
                             responseData.text().then(function (response) {
                                 let videoListRawData = parseDom(response);
                                 if (videoListRawData.length == 0) {
-                                    console.log(responseData.url);
+                                    console.log("没有找到可用的视频下载地址!");
+                                    GM_openInTab(responseData.url, { active: true, insert: true, setParent: true });
                                     debugger
                                 } else {
                                     let commentArea = videoListRawData.getElementsByClassName("node-info")[0].getElementsByClassName("field-type-text-with-summary field-label-hidden")[0].getElementsByClassName("field-item even");
@@ -314,7 +318,8 @@
                                                     responseData.json().then(function (response) {
                                                         let videoStreamInfo = response;
                                                         if (videoStreamInfo.length == 0) {
-                                                            console.log(responseData.url);
+                                                            console.log("没有找到可用的视频下载地址!");
+                                                            GM_openInTab(responseData.url, { active: true, insert: true, setParent: true });
                                                             debugger
                                                         } else {
                                                             let Url = decodeURIComponent("https:" + videoStreamInfo[0]["uri"]);
