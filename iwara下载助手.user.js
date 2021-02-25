@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.1
+// @version      1.0.2
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -655,9 +655,37 @@
     }
 
     element.createElement(main.PluginUI);
+    
+    if (window.location.href.split("/")[3] == "users") {
+        document.getElementById("downloadAll").style.display = "inline";
+    };
 
-    main.ConnectionWebSocket();
+    window.onclick = function (event) {
+        if (!event.path.includes(document.getElementById("PluginUI"))) {
+            if (document.getElementById("PluginUI").classList.contains("open")) {
+                document.getElementById("PluginUI").classList.remove("open");
+            }
+        }
+    };
 
+    if (setting.initialize) {
+        switch (setting.DownloadType) {
+            case DownloadTypes.aria2:
+                console.log("正在链接Aria2RPC");
+                main.ConnectionWebSocket();
+                break;
+            case DownloadTypes.default:
+                break;
+            case DownloadTypes.others:
+                break;
+            default:
+                console.log("未知的下载模式!");
+                break;
+        }
+    } else {
+        setting.setting();
+    }
+    
     var clickTimer = null;
     for (let index = 0; index < document.getElementsByClassName("node-video").length; index++) {
         const element = document.getElementsByClassName("node-video")[index];
@@ -692,20 +720,4 @@
             };
         };
     };
-
-    if (window.location.href.split("/")[3] == "users") {
-        document.getElementById("downloadAll").style.display = "inline";
-    };
-
-
-
-    window.onclick = function (event) {
-        if (!event.path.includes(document.getElementById("PluginUI"))) {
-            if (document.getElementById("PluginUI").classList.contains("open")) {
-                document.getElementById("PluginUI").classList.remove("open");
-            }
-        }
-    };
-
-
 })();
