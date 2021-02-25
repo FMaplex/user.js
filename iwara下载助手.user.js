@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.7
+// @version      1.0.8
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -558,6 +558,19 @@
                     onclick: function () {
                         this.parentNode.parentNode.style.display = "none";
                         setting.setDownloadType(setting.DownloadType);
+                        switch (setting.DownloadType) {
+                            case DownloadTypes.aria2:
+                                console.log("正在链接Aria2RPC");
+                                main.ConnectionWebSocket();
+                                break;
+                            case DownloadTypes.default:
+                                break;
+                            case DownloadTypes.others:
+                                break;
+                            default:
+                                console.log("未知的下载模式!");
+                                break;
+                        }
                         setting.setDownloadDir(setting.DownloadDir);
                         setting.setDownloadProxy(setting.DownloadProxy);
                         setting.setWebSocketAddress(setting.WebSocketAddress);
