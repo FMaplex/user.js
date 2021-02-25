@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.4
+// @version      1.0.5
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -119,7 +119,7 @@
         WebSocketID: GM_getValue("WebSocketID", guid()),
         setInitialize(value) {
             this.Initialize = value;
-            GM_setValue("DownloadType", this.DownloadType);
+            GM_setValue("Initialize", this.Initialize);
         },
         setDownloadType(value) {
             this.DownloadType = Number(value);
