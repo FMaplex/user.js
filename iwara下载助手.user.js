@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.5
+// @version      1.0.7
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -55,10 +55,6 @@
 
 
 
-
-
-
-
     const element = {
         createElement(detailedList) {
             if (detailedList instanceof Array) {
@@ -97,7 +93,6 @@
             return item;
         }
     };
-
 
 
 
@@ -358,23 +353,27 @@
                                 "out": FlieName,
                                 "dir": setting.DownloadDir + Author,
                                 "all-proxy": setting.DownloadProxy,
-                                "split": 2
                             }
                         ]
                     }));
                     break;
                 case DownloadTypes.default:
-                    GM_download({
-                        url: Url,
-                        name: FlieName,
-                        saveAs: false,
-                        onerror: function (error) {
-                            console.log(error);
-                        },
-                        onload: function () {
-                            console.log("已下载");
-                        }
-                    });
+                    console.log("开始下载:" + FlieName);
+                    (function (Url, FlieName) {
+                        let Name = FlieName;
+                        GM_download({
+                            name: FlieName,
+                            url: Url,
+                            saveAs: false,
+                            onload: function () {
+                                console.log(Name + " 下载完成!");
+                            },
+                            onerror: function (error) {
+                                console.log(Name + " 下载失败!");
+                                console.log(error);
+                            }
+                        });
+                    })(Url, FlieName);
                     break;
                 case DownloadTypes.others:
                     GM_openInTab(Url, { active: true, insert: true, setParent: true });
@@ -428,7 +427,7 @@
             innerHTML: `.selectButton{
                 text-align:right;
             }
-            .selectButton[isselected=false]:before 
+            .selectButton[isselected=false]:before
             {
                 position:absolute;
                 content: "";
@@ -444,21 +443,19 @@
                 z-index: 9999; /* 设置在顶层 */
                 left: 0;
                 top: 0;
-                width: 100%; 
+                width: 100%;
                 height: 100%;
-                overflow: auto; 
-                background-color: rgba(0,0,0,0.4); 
+                overflow: auto;
+                background-color: rgba(0,0,0,0.4);
             }
-            
             /* 弹窗内容 */
             .controlPanel-content {
                 background-color: #fefefe;
-                margin: 15% auto; 
+                margin: 15% auto;
                 padding: 20px;
                 border: 1px solid #888;
-                width: 80%; 
+                width: 80%;
             }
-            
             /* 关闭按钮 */
             .controlPanelClose {
                 color: #aaa;
@@ -466,7 +463,6 @@
                 font-size: 28px;
                 font-weight: bold;
             }
-            
             .controlPanelClose:hover,
             .controlPanelClose:focus {
                 color: black;
@@ -482,19 +478,22 @@
                 nodeType: 'button',
                 type: 'button',
                 id: 'PluginUIStartUp',
-                title: '快速下载',
+                title: '下载助手',
                 className: 'btn btn-primary btn-sm dropdown-toggle',
+                childs: [{
+                    nodeType: 'span',
+                    className: 'glyphicon glyphicon-download-alt'
+                }, {
+                    nodeType: 'text',
+                    innerHTML: '下载助手'
+                }],
                 onclick: function () {
                     if (this.parentNode.classList.contains("open")) {
                         this.parentNode.classList.remove("open");
                     } else {
                         this.parentNode.classList.add("open");
                     };
-                },
-                childs: [{
-                    nodeType: 'span',
-                    className: 'glyphicon glyphicon-download-alt'
-                }]
+                }
             },
             {
                 nodeType: 'ul',
@@ -701,7 +700,7 @@
     }
 
     element.createElement(main.PluginUI);
-    
+
     window.onclick = function (event) {
         if (!event.path.includes(document.getElementById("PluginUI"))) {
             if (document.getElementById("PluginUI").classList.contains("open")) {
