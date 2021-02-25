@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.9
+// @version      1.0.10
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -452,6 +452,16 @@
                 height: 100%;
                 overflow: auto;
                 background-color: rgba(0,0,0,0.4);
+                scrollbar-width: none; /* firefox */
+                -ms-overflow-style: none; /* IE 10+ */
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+            .controlPanel::-webkit-scrollbar {
+                display: none; /* Chrome Safari */
+            }
+            .demo {
+                
             }
             /* 弹窗内容 */
             .controlPanel-content {
@@ -459,7 +469,8 @@
                 margin: 15% auto;
                 padding: 20px;
                 border: 1px solid #888;
-                width: 80%;
+                width: 60%;
+                max-width: 720px;
             }
             /* 关闭按钮 */
             .controlPanelClose {
@@ -710,7 +721,17 @@
                                 style: 'width:100%'
                             }
                         ]
-                    }]
+                        }, {
+                            nodeType: 'div',
+                            style: 'margin: 10px 0;',
+                            childs: [
+                                {
+                                    nodeType: 'label',
+                                    style: 'margin-right: 5px;',
+                                    innerHTML: '双击视频选中,再次双击取消选中.选中仅在本页面有效.<br />在作者用户页面可以点击下载全部,插件将会搜索该用户的所有视频进行下载.<br />插件下载视频前会检查视频简介,如果在简介中发现MEGA链接或百度网盘链接,将会打开视频页面,供您手动下载.<br />手动下载需要您提供视频ID!'
+                                }
+                            ]
+                        }]
                 }]
             }],
             parent: document.body
