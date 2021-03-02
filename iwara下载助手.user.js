@@ -769,30 +769,4 @@
         setting.setting();
         main.Selected();
     }
-
-
-    var Something = function (element) {
-        // |this| is a newly created object
-        this.name = 'Something Good';
-        this.handleEvent = function (event) {
-            console.log(this.name); // 'Something Good', as this is bound to newly created object
-            switch (event.type) {
-                case 'click':
-                    // some code here...
-                    break;
-                case 'dblclick':
-                    // some code here...
-                    break;
-            }
-        };
-
-        // Note that the listeners in this case are |this|, not this.handleEvent
-        element.addEventListener('click', this, false);
-        element.addEventListener('dblclick', this, false);
-
-        // You can properly remove the listeners
-        element.removeEventListener('click', this, false);
-        element.removeEventListener('dblclick', this, false);
-    }
-    var s = new Something(document.body);
 })();
