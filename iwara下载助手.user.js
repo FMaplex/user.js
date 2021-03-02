@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.10
+// @version      1.0.11
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -273,10 +273,10 @@
                                 GM_openInTab(responseData.url, { active: true, insert: true, setParent: true });
                                 debugger
                             } else {
-                                ParseDownloadAddress(videoListRawData);
+                                main.ParseDownloadAddress(videoListRawData);
                                 if (videoListRawData.getElementsByClassName("pager-next").length != 0) {
                                     videoListUrl = videoListRawData.getElementsByClassName("pager-next")[0].children[0].href;
-                                    this.GetAllData(videoListUrl, data, referrer);
+                                    main.GetAllData(videoListUrl, data, referrer);
                                 } else {
                                     return;
                                 };
@@ -769,4 +769,30 @@
         setting.setting();
         main.Selected();
     }
+
+
+    var Something = function (element) {
+        // |this| is a newly created object
+        this.name = 'Something Good';
+        this.handleEvent = function (event) {
+            console.log(this.name); // 'Something Good', as this is bound to newly created object
+            switch (event.type) {
+                case 'click':
+                    // some code here...
+                    break;
+                case 'dblclick':
+                    // some code here...
+                    break;
+            }
+        };
+
+        // Note that the listeners in this case are |this|, not this.handleEvent
+        element.addEventListener('click', this, false);
+        element.addEventListener('dblclick', this, false);
+
+        // You can properly remove the listeners
+        element.removeEventListener('click', this, false);
+        element.removeEventListener('dblclick', this, false);
+    }
+    var s = new Something(document.body);
 })();
