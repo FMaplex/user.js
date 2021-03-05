@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.11
+// @version      1.0.12
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -307,9 +307,9 @@
                                     let comment;
                                     for (let index = 0; index < commentArea.length; index++) {
                                         const element = commentArea[index];
-                                        comment += element.innerText.toUpperCase();
+                                        comment += element.innerText.toLowerCase();
                                     };
-                                    if (comment.indexOf("/S/") != -1 || comment.indexOf("MEGA") != -1) {
+                                    if (comment.indexOf("/s/") != -1 || comment.indexOf("mega.nz/file/") != -1) {
                                         window.open(element.getElementsByTagName("A")[0].href, '_blank');
                                     } else {
                                         getData("https://ecchi.iwara.tv/api/video/" + ID, null, element.getElementsByTagName("A")[0].href).then(
