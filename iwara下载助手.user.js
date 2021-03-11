@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.0.13
+// @version      1.1.2
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -136,6 +136,15 @@
                 };
                 return item;
             },
+            moveElement(newElement, oldElement, isMovechildNode = false) {
+                if (isMovechildNode) {
+                    NodeList.prototype.forEach = Array.prototype.forEach;
+                    oldElement.childNodes.forEach(function (item) {
+                        newElement.appendChild(item.cloneNode(true));
+                    });
+                };
+                oldElement.parentNode.replaceChild(newElement,oldElement);
+            },
             parseDom(dom) {
                 return new DOMParser().parseFromString(dom, 'text/html');
             },
@@ -206,20 +215,37 @@
     const resources = {
         PluginUI: [{
             nodeType: 'style',
-            innerHTML: `.selectButton{
+            innerHTML: `
+            .selectButton {
+                -moz-user-select:none; /*火狐*/
+                -webkit-user-select:none; /*webkit浏览器*/
+                -ms-user-select:none; /*IE10*/
+                -khtml-user-select:none; /*早期浏览器*/
+                user-select:none;
+                position: relative;
+                width: 100%;
+                height: 100%;
             }
-            .selectButton[isselected=false]:before
-            {
-                content: "";
-            }
-            .selectButton[isselected=true]:before
-            {
-                position:absolute;
+            .selectButton[isselected=true]:before {
+                position: absolute;
+                display: block;
+                width: 100%;
+                height: 100%;
                 left: 50%;
                 top: 50%;
-                transform: translate(-50%, -50%) scale(1.48,0.96);
+                transform: translate(-50%, -50%);
+                background-color: rgba(150,150,150,0.6);
+                content: '';
+                
+            }
+            .selectButton[isselected=true]:after {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%) scale(1.32,0.96);
                 font-weight: 900;
                 font-size: 36px;
+                color: rgb(20,20,20);
                 content: '√';
             }
             .controlPanel {
@@ -239,9 +265,6 @@
             }
             .controlPanel::-webkit-scrollbar {
                 display: none; /* Chrome Safari */
-            }
-            .demo {
-
             }
             /* 弹窗内容 */
             .controlPanel-content {
@@ -564,10 +587,10 @@
                 for (let index = 0; index < document.querySelectorAll('.node-video').length; index++) {
                     const element = document.querySelectorAll('.node-video')[index];
                     if (!element.classList.contains("node-full")) {
-                        element.querySelector('a').removeAttribute('href');
-                        let selectButton = element.querySelector('a');
+                        let selectButton =document.createElement("div");
                         selectButton.classList.add("selectButton");
                         selectButton.setAttribute("isselected", false);
+                        library.Dom.moveElement(selectButton, element.querySelector('a'), true);
                         selectButton.ondblclick = function () {
                             if (clickTimer) {
                                 window.clearTimeout(clickTimer);
@@ -585,8 +608,8 @@
                                 clickTimer = null;
                             };
                             clickTimer = window.setTimeout(function () {
-                                GM_openInTab(element.getElementsByTagName("A")[1].href, { active: true, insert: true, setParent: true });
-                            }, 300);
+                                GM_openInTab(element.querySelector('a').href, { active: true, insert: true, setParent: true });
+                            }, 250);
                         };
                     };
                 };
@@ -759,7 +782,7 @@
             for (let index = 0; index < uploadedVideosList.length; index++) {
                 const element = uploadedVideosList[index];
                 let Author = element.getElementsByClassName("username")[0].innerText;
-                let ID = element.getElementsByTagName("A")[1].href.split("/")[4];
+                let ID = element.querySelector('a').href.split("/")[4];
                 let Name = element.getElementsByTagName("H3")[0].innerText;
                 library.Net.get(element.getElementsByTagName("A")[0].href, null, window.location.href).then(
                     function (responseData) {
