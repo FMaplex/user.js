@@ -23,8 +23,8 @@
                 parameter = parameter || [];
                 if (parameter.length != 0) {
                     url += '?';
-                    for (var key in Data) {
-                        url += key + '=' + Data[key] + '&';
+                    for (var key in parameter) {
+                        url += key + '=' + parameter[key] + '&';
                     };
                     url = url.substr(0, url.length - 1);
                 }
@@ -585,7 +585,7 @@
                                 clickTimer = null;
                             };
                             clickTimer = window.setTimeout(function () {
-                                element.getElementsByTagName("A")[1].click();
+                                GM_openInTab(element.getElementsByTagName("A")[1].href, { active: true, insert: true, setParent: true });
                             }, 300);
                         };
                     };
@@ -606,7 +606,7 @@
                         console.log("未知的下载模式!");
                         break;
                 };
-            }
+            };
         },
         ConnectionWebSocket() {
             try {
