@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iwara下载助手
 // @namespace    https://github.com/dawn-lc/user.js
-// @version      1.1.2
+// @version      1.1.4
 // @description  批量下载iwara视频
 // @author       dawn-lc
 // @match        https://ecchi.iwara.tv/users/*
@@ -213,7 +213,7 @@
     };
 
     const resources = {
-        PluginUI: [{
+        PluginStyle: {
             nodeType: 'style',
             innerHTML: `
             .selectButton {
@@ -289,7 +289,8 @@
                 cursor: pointer;
             }`,
             parent: document.head
-        }, {
+        },
+        PluginUI: {
             nodeType: 'div',
             id: 'PluginUI',
             className: 'btn-group',
@@ -362,7 +363,7 @@
                 }]
             }],
             parent: document.getElementById("user-links")
-        }],
+        },
         PluginControlPanel: [{
             nodeType: 'div',
             id: 'PluginControlPanel',
@@ -449,14 +450,7 @@
                                 id: 'DownloadDir',
                                 type: 'text',
                                 value: setting.DownloadDir,
-                                onchange: ({ target }) => {
-                                    if (/^([\/] [\w-]+)*$/.test(target.value)) {
-                                        target.style.replace(' background-color: red', '');
-                                        setting.setDownloadDir(target.value);
-                                    } else {
-                                        target.style += ' background-color: red';
-                                    }
-                                },
+                                onchange: ({ target }) => setting.setDownloadDir(target.value),
                                 style: 'width:100%;'
                             }
                         ]
@@ -475,14 +469,7 @@
                                 id: 'DownloadProxy',
                                 type: 'text',
                                 value: setting.DownloadProxy,
-                                onchange: ({ target }) => {
-                                    if (/^http:\/\/([\w-]+\.)+[\w-]+(\/[\w-.\/?%&=]*)?$/.test(target.value)) {
-                                        target.style.replace(' background-color: red', '');
-                                        setting.setDownloadProxy(target.value);
-                                    } else {
-                                        target.style += ' background-color: red';
-                                    }
-                                },
+                                onchange: ({ target }) => setting.setDownloadProxy(target.value),
                                 style: 'width:100%;'
                             }
                         ]
@@ -501,14 +488,7 @@
                                 id: 'WebSocketAddress',
                                 type: 'text',
                                 value: setting.WebSocketAddress,
-                                onchange: ({ target }) => {
-                                    if (/^ws:\/\/([\w-]+\.)+[\w-]+(\/[\w-.\/?%&=]*)?$/.test(target.value)) {
-                                        target.style.replace(' background-color: red', '');
-                                        setting.setWebSocketAddress(target.value);
-                                    } else {
-                                        target.style += ' background-color: red';
-                                    }
-                                },
+                                onchange: ({ target }) => setting.setWebSocketAddress(target.value),
                                 style: 'width:100%;'
                             }
                         ]
@@ -555,8 +535,9 @@
         PluginControlPanel: null,
         start() {
             //创建并注入UI
+            library.Dom.createElement(resources.PluginStyle);
             library.Dom.createElement(resources.PluginUI);
-            main.PluginControlPanel = library.Dom.createElement(resources.PluginControlPanel);
+            this.PluginControlPanel = library.Dom.createElement(resources.PluginControlPanel)[0];
             window.onclick = function (event) {
                 if (!event.path.includes(document.getElementById("PluginUI"))) {
                     if (document.getElementById("PluginUI").classList.contains("open")) {
@@ -565,16 +546,16 @@
                 };
             };
             //初始化
-            for (let index = 0; index < document.querySelectorAll('input[name=DownloadType]').length; index++) {
-                const element = document.querySelectorAll('input[name=DownloadType]')[index];
-                if (Number(element.value) == this.DownloadType) {
+            for (let index = 0; index < this.PluginControlPanel.querySelectorAll('input[name=DownloadType]').length; index++) {
+                const element = this.PluginControlPanel.querySelectorAll('input[name=DownloadType]')[index];
+                if (Number(element.value) == setting.DownloadType) {
                     element.setAttribute("checked", null);
                     break;
                 };
             };
             if (!setting.Initialize) {
                 //首次启动
-                main.PluginControlPanel.style.display = 'block';
+                this.PluginControlPanel.style.display = 'block';
             } else {
                 //正常启动
                 main.run();
